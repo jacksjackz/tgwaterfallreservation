@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-analytics.js";
-import { getDatabase , ref, set, push, get, onValue, update, remove  } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+import { getDatabase, ref, set, push, get, onValue, update, remove } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
 
 
@@ -27,8 +27,7 @@ const database = getDatabase(app);
 
 
 
-function _addOrUpdateReservation(reservationCode, fullName, totalPax, reservedate, reservetime)
-{
+function _addOrUpdateReservation(reservationCode, fullName, totalPax, reservedate, reservetime) {
 
     const dbRef = ref(database, 'reservations/' + reservationCode);
 
@@ -50,8 +49,7 @@ function _addOrUpdateReservation(reservationCode, fullName, totalPax, reservedat
 }
 
 
-function _getReservation(reservationCode)
-{
+function _getReservation(reservationCode) {
     const dbRef = ref(database, 'reservations/' + reservationCode);
 
     return get(dbRef)
@@ -68,64 +66,91 @@ function _getReservation(reservationCode)
 }
 
 function _updateTableNo(reservationCode, tableNo) {
-        const dbRef = ref(database, 'reservations/' + reservationCode);
+    const dbRef = ref(database, 'reservations/' + reservationCode);
 
-        return update(dbRef, {
-            tableno: tableNo
+    return update(dbRef, {
+        tableno: tableNo
+    })
+        .then(() => {
+            return "OK"
         })
-            .then(() => {
-                return "OK"
-            })
-            .catch((error) => {
-                return error; // Forward the error
-            });
-    }
+        .catch((error) => {
+            return error; // Forward the error
+        });
+}
 
-    function _deleteReservation(reservationCode) {
-        const dbRef = ref(database, 'reservations/' + reservationCode);
+function _deleteReservation(reservationCode) {
+    const dbRef = ref(database, 'reservations/' + reservationCode);
 
-        return remove(dbRef)
-            .then(() => {
-                return "OK"
-            })
-            .catch((error) => {
-                return error; // Forward the error
-            });
-    }
+    return remove(dbRef)
+        .then(() => {
+            return "OK"
+        })
+        .catch((error) => {
+            return error; // Forward the error
+        });
+}
+
+
+// const App = {
+//     addEditReservation: (reservationCode, fullName, totalPax, reservedate, reservetime) => {
+//         return _addOrUpdateReservation(reservationCode, fullName, totalPax, reservedate, reservetime)
+//             .then((data) => {
+//                 return data; // Pass the data to the caller
+//             });
+//     },
+//     getReservation: (reservationCode) => {
+
+//         return _getReservation(reservationCode)
+//             .then((data) => {
+//                 return data; // Pass the data to the caller
+//             });
+//     },
+//     updateTableNo: (reservationCode, tableNo) => {
+//         return _updateTableNo(reservationCode, tableNo)
+//             .then((data) => {
+//                 return data; // Pass the data to the caller
+//             });
+//     },
+//     deleteReservation: (reservationCode) => {
+//         return _deleteReservation(reservationCode)
+//             .then((data) => {
+//                 return data; // Pass the data to the caller
+//             });
+//     }
+// };
 
 
 const App = {
-    addEditReservation: (reservationCode, fullName, totalPax, reservedate, reservetime) =>
-        {
-        return _addOrUpdateReservation(reservationCode, fullName, totalPax, reservedate, reservetime)
-            .then((data) => {
-                return data; // Pass the data to the caller
-            });
-    },
-    getReservation: (reservationCode) =>
-    {
-        
-        return _getReservation(reservationCode)
-            .then((data) => {
-                return data; // Pass the data to the caller
-            });
-    },
-    updateTableNo: (reservationCode, tableNo) =>
-    {
-        return _updateTableNo(reservationCode, tableNo)
+async addEditReservation(reservationCode, fullName, totalPax, reservedate, reservetime)
+{
+
+    return _addOrUpdateReservation(reservationCode, fullName, totalPax, reservedate, reservetime)
         .then((data) => {
-                return data; // Pass the data to the caller
-            });
-    },
-    deleteReservation: (reservationCode) =>
-    {
-        return _deleteReservation(reservationCode)
+            return data; // Pass the data to the caller
+        });
+},
+async getReservation(reservationCode) {
+
+    return _getReservation(reservationCode)
         .then((data) => {
-                return data; // Pass the data to the caller
-            });
-    }
+            return data; // Pass the data to the caller
+        });
+},
+async updateTableNo(reservationCode, tableNo) {
+    return _updateTableNo(reservationCode, tableNo)
+        .then((data) => {
+            return data; // Pass the data to the caller
+        });
+},
+async deleteReservation(reservationCode) {
+    return _deleteReservation(reservationCode)
+        .then((data) => {
+            return data; // Pass the data to the caller
+        });
+}
 };
 
-
 // Attach to window
-window.App = App;
+window.MyController = App
+// window.App = App;
