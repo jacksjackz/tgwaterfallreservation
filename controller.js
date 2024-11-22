@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-analytics.js";
 import { getDatabase, ref, set, push, get, onValue, update, remove } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
-
+import { moment } from "https://cdn.jsdelivr.net/npm/moment@2.30.1/moment.min.js";
 
 
 // TODO: Add SDKs for Firebase products that you want to use
@@ -26,17 +26,28 @@ const analytics = getAnalytics(app);
 const database = getDatabase(app);
 
 
+let dateNow = moment().format("HH:mm:ss DD-MM-YYYY");
+console.log(dateNow);
+
+function log(obj)
+{
+    console.log(obj);
+}
+
 
 function _addOrUpdateReservation(reservationCode, fullName, totalPax, reservedate, reservetime) {
 
     const dbRef = ref(database, 'reservations/' + reservationCode);
+
+    let dateNow = moment().format("HH:mm:ss DD-MM-YYYY");
+    //console.log(dateNow);
 
     return set(dbRef, {
         fullName: fullName,
         totalPax: totalPax,
         reservedate: reservedate,
         reservetime: reservetime,
-        lastupdate: new Date().getTime(),
+        lastupdate: dateNow,
         tableno: ""
     })
         .then(() => {
