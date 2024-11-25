@@ -53,9 +53,11 @@ function log(obj)
 
 function _addOrUpdateReservation(reservationCode, fullName, totalPax, reservedate, reservetime) {
 
-    const dbRef = ref(database, 'reservations/' + reservationCode);
+    log(reservedate);
+    const dbRef = ref(database, 'reservations/' + reservedate + "/" + reservationCode);
 
     let dateNow = formatDate(new Date())
+    //console.log(dateNow)
 
     return set(dbRef, {
         fullName: fullName,
@@ -63,7 +65,8 @@ function _addOrUpdateReservation(reservationCode, fullName, totalPax, reservedat
         reservedate: reservedate,
         reservetime: reservetime,
         lastupdate: dateNow,
-        tableno: ""
+        tableno: "",
+        reservationCode: reservationCode
     })
         .then(() => {
             return "OK"
@@ -75,20 +78,143 @@ function _addOrUpdateReservation(reservationCode, fullName, totalPax, reservedat
 }
 
 
-function _getReservation(reservationCode) {
-    const dbRef = ref(database, 'reservations/' + reservationCode);
+function _getCountByDateOnly(reservedate)
+{
+    const dbRef = ref(database, 'reservations/' + reservedate)
 
     return get(dbRef)
         .then((snapshot) => {
             if (snapshot.exists()) {
+                const data = snapshot.val();
+                const count = Object.keys(data).length; // Count the keys
+                return count;
+            } else {
+                console.log("No data available");
+            }
+        })
+        .catch((error) => {
+            console.error("Error fetching data:", error);
+        });
+}
+
+function isBlank(val) {
+    if (val != undefined && String(val).trim().length != 0)
+        return false;
+    return true;
+}
+
+function _getCountByDate(reservedate)
+{
+    const dbRef = ref(database, 'reservations/' + reservedate)
+
+    return get(dbRef)
+        .then((snapshot) => {
+            if (snapshot.exists()) 
+            {
+
+                let countHM = new Map()
+
+                const data = snapshot.val();
+
+              //  log(data)
+
+                for (const [obj] of Object.entries(data))
+                {
+                    let reserveTime = data[obj].reservetime;
+
+                    let countReserveTime = countHM.get(reserveTime);
+
+                    if(isBlank(countReserveTime) == true)
+                    {
+                        countHM.set(reserveTime, 1);
+                       
+                    }
+                    else
+                    {
+                        countReserveTime = countReserveTime + 1
+                        countHM.set(reserveTime, countReserveTime);
+                    }
+                    
+                }
+
+                return countHM;
+            } else {
+                console.log("No data available");
+            }
+        })
+        .catch((error) => {
+            console.error("Error fetching data:", error);
+        });
+}
+
+
+function _getReservation(reservationCode) 
+{
+    log(reservationCode);
+
+    let parts = reservationCode.split("-")
+    let dateReserved = (parts[2])
+
+    const year = dateReserved.slice(0, 4); // Extract the year (YYYY)
+    const month = dateReserved.slice(4, 6); // Extract the month (MM)
+    const day = dateReserved.slice(6, 8); // Extract the day (DD)
+
+    dateReserved = `${year}-${month}-${day}`;
+
+    log(dateReserved)
+
+    const dbRef = ref(database, 'reservations' + '/' + dateReserved + '/' + reservationCode);
+
+    return get(dbRef)
+        .then((snapshot) => {
+            if (snapshot.exists()) {
+
+               // const data = snapshot.val();
                 return snapshot.val(); // Resolve with the data
             } else {
                 return ""
             }
-        })
+        })  
         .catch((error) => {
             return error; // Forward the error
         });
+
+        //
+
+        // return get(dbRef)
+        // .then((snapshot) => {
+        //     if (snapshot.exists()) 
+        //     {
+        //         const records = snapshot.val();
+        //         log(records)
+        //     }
+
+
+        //     } else {
+        //         return ""
+        //     }
+        // })
+        // .catch((error) => {
+        //     return error; // Forward the error
+        // });
+
+    // try {
+    //     return get(recordsRef);
+    //     if (snapshot.exists()) {
+    //         const records = snapshot.val();
+    //         for (const date in records) {
+    //             if (records[date][id]) {
+    //                 console.log(`Found ID ${id} under date ${date}:`, records[date][id]);
+    //                 return records[date][id];
+    //             }
+    //         }
+    //         console.log(`ID ${id} not found.`);
+    //     } else {
+    //         console.log("No records found.");
+    //     }
+    // } catch (error) {
+    //     console.error("Error fetching data:", error);
+    // }
 }
 
 function _updateTableNo(reservationCode, tableNo) {
@@ -171,6 +297,12 @@ async updateTableNo(reservationCode, tableNo) {
 },
 async deleteReservation(reservationCode) {
     return _deleteReservation(reservationCode)
+        .then((data) => {
+            return data; // Pass the data to the caller
+        });
+},
+async getCountByDate(reservedate) {
+    return _getCountByDate(reservedate)
         .then((data) => {
             return data; // Pass the data to the caller
         });
